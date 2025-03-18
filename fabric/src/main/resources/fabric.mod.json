@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "cobbreeding",
+	"version": "${version}",
+	"name": "Cobbreeding",
+	"description": "Adds Pokémon breeding to Cobblemon!",
+	"authors": [
+		"Ludichat",
+		"Fuzuki"
+	],
+	"contact": {
+		"sources": "https://gitlab.com/ludichat/Cobbreeding",
+		"issues": "https://gitlab.com/ludichat/Cobbreeding/-/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/cobbreeding/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "ludichat.cobbreeding.fabric.Cobbreeding"
+			}
+		],
+		"client": [
+			{
+				"value": "ludichat.cobbreeding.fabric.CobbreedingClient"
+			}
+		]
+	},
+	"mixins": [
+		"cobbreeding.mixins.json",
+		"cobbreeding-fabric.mixins.json"
+	],
+	"depends": {
+		"fabric-api": "*",
+		"minecraft": "${minecraft_version}",
+		"architectury": "${architectury_version}.x",
+		"cobblemon": ">=${cobblemon_version}"
+	}
+}

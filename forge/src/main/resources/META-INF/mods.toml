@@ -1,0 +1,42 @@
+modLoader = "kotlinforforge"
+loaderVersion = "[4,)"
+issueTrackerURL = ""
+license = "MIT"
+
+[[mods]]
+modId = "cobbreeding"
+version = "${version}"
+displayName = "Cobbreeding"
+authors = [
+    "Ludichat",
+    "Fuzuki"
+]
+description = '''
+Adds Pokémon breeding to Cobblemon!
+'''
+logoFile = "assets/cobbreeding/icon.png"
+
+[[dependencies.cobbreeding]]
+modId = "forge"
+mandatory = true
+versionRange = "[${loader_version},)"
+
+[[dependencies.cobbreeding]]
+modId = "kotlinforforge"
+mandatory = true
+versionRange = "[${forge_kotlin_version},)"
+
+[[dependencies.cobbreeding]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version}]"
+
+[[dependencies.cobbreeding]]
+modId = "architectury"
+mandatory = true
+versionRange = "[${architectury_version},)"
+
+[[dependencies.cobbreeding]]
+modId = "cobblemon"
+mandatory = true
+versionRange = "[${cobblemon_version},)"

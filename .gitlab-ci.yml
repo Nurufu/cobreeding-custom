@@ -1,0 +1,54 @@
+image: gradle:alpine
+
+before_script:
+  - export GRADLE_USER_HOME="$(pwd)/.gradle"
+
+build:
+  stage: build
+  script: gradle --build-cache assemble
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - common/.gradle
+      - common/build
+      - fabric/.gradle
+      - fabric/build
+      - forge/.gradle
+      - forge/build
+      - .gradle
+      - build
+
+test:
+  stage: test
+  needs: [build]
+  when: manual
+  script: gradle check
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - common/.gradle
+      - common/build
+      - fabric/.gradle
+      - fabric/build
+      - forge/.gradle
+      - forge/build
+      - .gradle
+
+deploy:
+  stage: deploy
+  needs: [build]
+  when: manual
+  script:
+    - echo "Moving artifacts"
+    - mv build/libs/*.jar ./
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - ./*-{fabric,forge}-*.jar
