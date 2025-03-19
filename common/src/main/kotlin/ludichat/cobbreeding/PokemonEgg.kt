@@ -1,8 +1,6 @@
 package ludichat.cobbreeding
 
 import com.cobblemon.mod.common.Cobblemon
-import com.cobblemon.mod.common.api.events.CobblemonEvents
-import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionCompleteEvent
 import com.cobblemon.mod.common.api.moves.BenchedMove
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.pokemon.Natures
@@ -15,6 +13,10 @@ import com.cobblemon.mod.common.pokemon.IVs
 import com.cobblemon.mod.common.pokemon.Nature
 import com.cobblemon.mod.common.pokemon.Species
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration
+import de.erdbeerbaerlp.dcintegration.common.storage.Configuration
+import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage
+import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils
+import de.erdbeerbaerlp.dcintegration.common.util.TextColors
 import ludichat.cobbreeding.PastureUtilities.toIVs
 import ludichat.cobbreeding.PastureUtilities.toIdArray
 import ludichat.cobbreeding.PastureUtilities.toIntArray
@@ -122,7 +124,7 @@ class PokemonEgg(settings: Settings?) : Item(settings) {
             // handling tickTime so the method only plays every second
             var tickTime = stack.nbt?.getInt("tickTime") ?: 0
             stack.getOrCreateNbt().putInt("tickTime", tickTime + 1)
-            tickTime = tickTime + 1
+            tickTime += 1
             if (tickTime < 20) return
             stack.getOrCreateNbt().putInt("tickTime", 0)
 
@@ -176,12 +178,16 @@ class PokemonEgg(settings: Settings?) : Item(settings) {
                             val u = entity as ServerPlayerEntity
                             u.server.playerManager.broadcast(
                                 Text.translatable("shiny_egg", *arrayOf<Any>(u.displayName), "§e${pokemonProperties.species.toString()
-                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}"), false
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}!"), false
                             )
-                            if(!world.isClient()){
-                            DiscordIntegration.INSTANCE.sendMessage("${u.displayName.string
-                            } just hatched a strangely-colored ${pokemonProperties.species.toString()
-                                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}!")}
+                            try{
+                            var embedBuilder = Configuration.instance().embedMode.chatMessages.toEmbed()
+                            embedBuilder = embedBuilder.setColor(TextColors.generateFromUUID(u.uuid))
+                            embedBuilder = embedBuilder.setAuthor(u.name.string, null, Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", u.uuidAsString).replace("%uuid_dashless%", u.uuidAsString.replace("-", "")).replace("%name%", u.name.string).replace("%randomUUID%", UUID.randomUUID().toString()))
+                                .setDescription("${u.displayName.string} just hatched a strangely-colored ${pokemonProperties.species.toString().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}!")
+
+                            DiscordIntegration.INSTANCE.sendMessage(DiscordMessage(embedBuilder.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID))
+                            }catch(e: NoClassDefFoundError) {null}
                     }} catch (e: Exception) {
                         Cobbreeding.LOGGER.error("Egg hatching failed: ${e.message}\n${e.stackTrace}")
                         entity.sendMessage(Text.translatable("cobbreeding.msg.egg_hatch.fail"))
