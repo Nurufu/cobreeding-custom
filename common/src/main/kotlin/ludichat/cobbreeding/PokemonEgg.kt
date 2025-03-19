@@ -178,7 +178,7 @@ class PokemonEgg(settings: Settings?) : Item(settings) {
                             val u = entity as ServerPlayerEntity
                             u.server.playerManager.broadcast(
                                 Text.translatable("shiny_egg", *arrayOf<Any>(u.displayName), "§e${pokemonProperties.species.toString()
-                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}!"), false
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}"), false
                             )
                             try{
                             var embedBuilder = Configuration.instance().embedMode.chatMessages.toEmbed()
