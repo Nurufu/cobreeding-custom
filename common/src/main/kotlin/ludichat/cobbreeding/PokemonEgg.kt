@@ -15,7 +15,6 @@ import com.cobblemon.mod.common.pokemon.Species
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage
-import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors
 import ludichat.cobbreeding.PastureUtilities.toIVs
 import ludichat.cobbreeding.PastureUtilities.toIdArray
@@ -122,20 +121,18 @@ class PokemonEgg(settings: Settings?) : Item(settings) {
 
         if (entity != null && entity is PlayerEntity && stack != null && !world?.isClient!!) {
             // handling tickTime so the method only plays every second
-            var tickTime = stack.nbt?.getInt("tickTime") ?: 0
-            stack.getOrCreateNbt().putInt("tickTime", tickTime + 1)
-            tickTime += 1
-            if (tickTime < 20) return
-            stack.getOrCreateNbt().putInt("tickTime", 0)
+            if (world.time % 20 != 0.toLong()) return
 
-            val timer = stack.nbt?.getInt("timer") ?: 100
-            stack.getOrCreateNbt().putInt("timer", timer - 20)
-
+            var timer = stack.nbt?.getInt("timer") ?: 100
             // Egg hatches faster is the player has a pokemon with an ability increasing hatching speed
-            if(Cobbreeding.INCUBATOR_ABILITIES_REGISTRY.shouldHatchFaster(entity.uuidAsString))
-                stack.getOrCreateNbt().putInt("timer", timer - 40)
-
-            if (timer <= 0) {
+            timer -= 
+                if (Cobbreeding.INCUBATOR_ABILITIES_REGISTRY.shouldHatchFaster(entity.uuidAsString))
+                    40
+                else
+                    20
+            if (timer > 0)
+                stack.getOrCreateNbt().putInt("timer", timer)
+            else {
                 val info = stack.nbt?.let { Info.fromNbt(it) }
                 if (info != null)
                 {
@@ -187,7 +184,7 @@ class PokemonEgg(settings: Settings?) : Item(settings) {
                                 .setDescription("${u.displayName.string} just hatched a strangely-colored ${pokemonProperties.species.toString().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}!")
 
                             DiscordIntegration.INSTANCE.sendMessage(DiscordMessage(embedBuilder.build()),DiscordIntegration.INSTANCE.getChannel(Configuration.instance().advanced.chatOutputChannelID))
-                            }catch(e: NoClassDefFoundError) {null}
+                            }catch(_: NoClassDefFoundError) {}
                     }} catch (e: Exception) {
                         Cobbreeding.LOGGER.error("Egg hatching failed: ${e.message}\n${e.stackTrace}")
                         entity.sendMessage(Text.translatable("cobbreeding.msg.egg_hatch.fail"))
